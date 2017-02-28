@@ -1,0 +1,108 @@
+SET ThousandSep=',';
+SET DecimalSep='.';
+SET MoneyThousandSep=',';
+SET MoneyDecimalSep='.';
+SET MoneyFormat='$#,##0.00;($#,##0.00)';
+SET TimeFormat='h:mm:ss TT';
+SET DateFormat='M/D/YYYY';
+SET TimestampFormat='M/D/YYYY h:mm:ss[.fff] TT';
+SET FirstWeekDay=6;
+SET BrokenWeeks=1;
+SET ReferenceDay=0;
+SET FirstMonthOfYear=1;
+SET CollationLocale='en-US';
+SET CreateSearchIndexOnReload=1;
+SET MonthNames='Jan;Feb;Mar;Apr;May;Jun;Jul;Aug;Sep;Oct;Nov;Dec';
+SET LongMonthNames='January;February;March;April;May;June;July;August;September;October;November;December';
+SET DayNames='Mon;Tue;Wed;Thu;Fri;Sat;Sun';
+SET LongDayNames='Monday;Tuesday;Wednesday;Thursday;Friday;Saturday;Sunday';
+
+TheTable:
+LOAD
+    "Employee Id",
+    "Full Name",
+    "First Name",
+    "Last Name",
+    Title,
+    "Seniority Level",
+    "Job Functions",
+    "Reports To",
+    Email,
+    "Direct Phone",
+    "Cell Phone",
+    "Address 1",
+    "Address 2",
+    City,
+    State,
+    "Postal Code",
+    Country,
+    "Twitter Link",
+    "LinkedIn URL",
+    Description,
+    "Technology Responsibilities",
+    "My Notes",
+    "Employee Profile Link",
+    "Company Id",
+    "Company Name",
+    Website,
+    "Corp HQ Phone",
+    "Company Email Domain",
+    "Company Description",
+    "Company Notes",
+    Industry,
+    "Revenue (Mil)",
+    "IT Budget (Mil)",
+    "3 yr Sales Growth %",
+    "Fiscal Year End",
+    "Number of Employees",
+    "3 yr Employees Growth %",
+    "IT Employees",
+    If("IT Employees">=0 And("IT Employees"<2500), '0 < X < 2500',
+    (If("IT Employees">=2500 And("IT Employees"<5000),'2500 < X < 5000',
+    (If("IT Employees">=5000 And("IT Employees"<10000),'5000 < X < 10000',
+    (If("IT Employees">=10000, 'X > 10000'))))))) AS "IT Employees Bucket",
+    "Fortune Rank",
+    "HQ Address 1",
+    "HQ Address 2",
+    "HQ City",
+    "HQ State",
+    "HQ Postal Code",
+    "HQ Country",
+    Ownership,
+    "DUNS Number",
+    "DUNS Parent",
+    "Company Twitter Link",
+    "Company LinkedIn URL",
+    "Company Technologies",
+    "My Notes on Company",
+    "Company Profile Link",
+    "Company Other Names",
+    "SIC values",
+    "NAICS values"
+FROM [lib://Main Connection/DiscoverOrg Health Care C Suite United States Old Excel version.xls]
+(biff, embedded labels, table is [DiscoverOrg Health Care C Suite$]);
+
+Join(TheTable)
+LOAD
+    "Contact ID",
+    "First Name"&' '&"Last Name" As "Full Name",
+    Email,
+    Phone,
+    Role,
+    Title,
+    "HS Unique ID",
+    "Health System" As "Company Name",
+    "Organization Unique Id",
+    Organization,
+    Address,
+    City,
+    "S/P" As "State",
+    "Zip Code",
+    "Organization Type",
+    "Organization Primary Service",
+    "Email Convention",
+    "Organization Phone",
+    Date("Date (Full Update)") As Date
+FROM [lib://Main Connection/Hospital.xlsx]
+(ooxml, embedded labels, table is Hospital);
+

@@ -1,0 +1,80 @@
+SET ThousandSep=',';
+SET DecimalSep='.';
+SET MoneyThousandSep=',';
+SET MoneyDecimalSep='.';
+SET MoneyFormat='$#,##0.00;($#,##0.00)';
+SET TimeFormat='h:mm:ss TT';
+SET DateFormat='M/D/YYYY';
+SET TimestampFormat='M/D/YYYY h:mm:ss[.fff] TT';
+SET FirstWeekDay=6;
+SET BrokenWeeks=1;
+SET ReferenceDay=0;
+SET FirstMonthOfYear=1;
+SET CollationLocale='en-US';
+SET CreateSearchIndexOnReload=1;
+SET MonthNames='Jan;Feb;Mar;Apr;May;Jun;Jul;Aug;Sep;Oct;Nov;Dec';
+SET LongMonthNames='January;February;March;April;May;June;July;August;September;October;November;December';
+SET DayNames='Mon;Tue;Wed;Thu;Fri;Sat;Sun';
+SET LongDayNames='Monday;Tuesday;Wednesday;Thursday;Friday;Saturday;Sunday';
+
+LOAD
+   If(Len("Contract Type")>1,"Contract Type",'NOT LISTED') AS "Contract Type",
+    "Contract #",
+    If(Len("Item Status")>1,"Item Status",'NOT LISTED') AS "Item Status",
+    "Item Name" AS "Product Number",
+    "Serial Number",
+    Qty,
+    Date("Item Begin Date") AS "Item Begin Date",
+    Date("Item End Date") AS "End of Sale",
+    Date("Last Date of Support") AS "Last Date of Support",
+    "Maintenance List Price",
+    Date("Ship Date") AS "Date Of Acquisition",
+    If(Len("Item Type")>1,"Item Type",'NOT LISTED') AS "Item Type",
+    "Product Group",
+    "Install Site ID",
+    "Install Site Name",
+    "Install Site Address",
+    "Install Site Address 2",
+    City,
+    State,
+    If(Len("Zipcode")>1,"Zipcode",'NOT LISTED') AS Zipcode,
+    Country,
+    "Product List Price",
+    "Maintenance Bill-To ID",
+    "Maintenance Bill-To Name",
+    "Maintenance SO#",
+    "Maintenance PO#",
+    "Instance ID",
+    "Contract Status",
+    "Currency Code",
+    
+    If(
+    	[Item End Date]>=MakeDate(2017,1,1) ,
+    		If([Last Date of Support]>=MakeDate(2017,1,1),
+	    		[Last Date of Support]-MakeDate(2017,1,1))) AS "Remaining Days Until Sunset",
+       
+    If(
+    	MakeDate(2017,1,1)>[Item End Date],
+        	'EXPIRED','ACTIVE') AS "Calculated Expiry",
+    
+    If(
+    	[Item End Date]>=MakeDate(2017,1,1),
+    		[Item End Date]-MakeDate(2017,1,1)) AS "Remaining Days Until End of Sale",
+        
+    If(
+    	Len("Last Date of Support")>1,
+        	'Has Sunset','No Sunset Listed') AS "Sunset Flag",
+    
+    
+    If(
+    	"Item Status"='EXPIRED' 
+    	AND ("Last Date of Support">=AddMonths(MakeDate(2017,1,1),12) 
+        OR not Len("Last Date of Support")>1),
+        	'Expired and Could be Reactivated') AS "Reactivate Flag",
+            
+    If(
+    	"Item Status"='ACTIVE' 
+        AND [Item End Date]<=AddMonths(MakeDate(2017,1,1),7),
+        	'Active & Expiring Soon') AS "Active & Expiring Soon Flag"
+FROM [lib://SmartnetConnection2/Smartnet Random Data.xlsx]
+(ooxml, embedded labels, header is 7 lines, table is csd);
